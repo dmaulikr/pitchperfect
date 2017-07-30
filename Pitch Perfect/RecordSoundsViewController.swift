@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 
 
-class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
+class RecordSoundsViewController: UIViewController {
 
     @IBOutlet weak var recodingLabel: UILabel!
     @IBOutlet weak var recordButton: UIButton!
@@ -52,29 +52,35 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
         configUI(isRecording: false)
     }
     
-    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool){
-        if flag {
-            performSegue(withIdentifier: "stopRecording", sender: audioRecorder.url)
-        } else {
-            print("recording was not successful")
-        }
-    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "stopRecording" {
-            let playSoundsVC = segue.destination as! playSoundsViewController
+            let playSoundsVC = segue.destination as! PlaySoundsViewController
             let recordedAudioURL = sender as! URL
             playSoundsVC.recordedAudioURL = recordedAudioURL
         }
     }
 
     func configUI (isRecording: Bool) {
-        var strrecLabText = "Tap to Record"
-        if isRecording {
-            strrecLabText = "Recording in Progress"
-        }
+        recodingLabel.text = isRecording ? "Recording in Progress" : "Tap to Record"
         stopRecordButton.isEnabled = isRecording
         recordButton.isEnabled = !isRecording
-        recodingLabel.text = strrecLabText
+    }
+}
+
+extension RecordSoundsViewController: AVAudioRecorderDelegate {
+    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool){
+        if flag {
+            performSegue(withIdentifier: "stopRecording", sender: audioRecorder.url)
+        } else {
+            
+            let alertController = UIAlertController(title: "iOScreator", message:
+                "Recording was not successful", preferredStyle: UIAlertControllerStyle.alert)
+            alertController.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.default,handler: nil))
+            
+            self.present(alertController, animated: true, completion: nil)
+            
+            print("recording was not successful")
+        }
     }
 }
